@@ -22,6 +22,7 @@ env:
   RT_REPO_NPM_DEFAULT_LOCAL: "lab110-npm-sandbox-local"
   # EVIDENCE_JSON: "my-evidence.json"
   # RBv2_SPEC_JSON: "RBv2-SPEC.json"
+  FOO: bar
 jobs:
 
   npmPackage:
