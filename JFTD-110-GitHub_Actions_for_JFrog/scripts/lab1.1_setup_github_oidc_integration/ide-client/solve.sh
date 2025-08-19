@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Source the jf_api_wrapper_utils.sh script to get access to the RT & Access OIDC functions
-source "$(dirname "$0")/../../jf_api_wrapper_utils.sh"
+#source "$(dirname "$0")/../../jf_api_wrapper_utils.sh"
+source /root/swampup25/JFTD-110-GitHub_Actions_for_JFrog/scripts/jf_api_wrapper_utils.sh
 
 jf_solve_lab_1_1() {
     # Solve Lab 1.1 by creating the required OIDC provider
@@ -9,7 +10,7 @@ jf_solve_lab_1_1() {
     # Returns: 0 if successful, 1 if provider already exists, 2 on error
     
     local server_id="$1"
-    local provider_name="${2:-svk-githuboidc}"
+    local provider_name="${2:-jfrog-githuboidc}"
     local debug="${3:-false}"
     
     if [ -z "$server_id" ]; then
@@ -83,10 +84,10 @@ echo "   Server ID: $SERVER_ID"
 echo ""
 
 # Solve Lab 1.1 by creating the OIDC provider
-if jf_solve_lab_1_1 "$SERVER_ID" "svk-githuboidc" true; then
+if jf_solve_lab_1_1 "$SERVER_ID" "jfrog-githuboidc" true; then
     echo ""
     echo "🎉 Lab 1.1 completed successfully!"
-    echo "✅ OIDC provider 'svk-githuboidc' is ready for GitHub Actions integration"
+    echo "✅ OIDC provider 'jfrog-githuboidc' is ready for GitHub Actions integration"
     echo ""
     echo "📋 Next steps:"
     echo "   1. Use this OIDC provider in your GitHub Actions workflow"

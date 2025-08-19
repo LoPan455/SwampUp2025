@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # Source the check.sh script from lab1.1 to get access to the OIDC functions
-source "$(dirname "$0")/../../jf_api_wrapper_utils.sh"
+source /root/swampup25/JFTD-110-GitHub_Actions_for_JFrog/scripts/jf_api_wrapper_utils.sh
 
 echo "🔍 Lab 1.2 - Checking OIDC Identity Mapping"
 echo "================================================"
 
 # Configuration
-SERVER_ID="academy1"
-PROVIDER_NAME="svk-githuboidc"
+SERVER_ID="academy"
+PROVIDER_NAME="jfrog-githuboidc"
 MAPPING_NAME="jfrog-repos"
 
 echo "🔧 Configuration:"

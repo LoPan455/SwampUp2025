@@ -1,0 +1,5 @@
+#!/bin/bash
+
+#source /root/.bashrc
+#chmod +x /root/jfrog/JFTD-110-GitHub_Actions_for_JFrog/scripts/lab0_configure_npm_virtual_repository/ide-client/check.sh
+/root/swampup25/JFTD-110-GitHub_Actions_for_JFrog/scripts/lab0_configure_npm_virtual_repository/ide-client/check.sh

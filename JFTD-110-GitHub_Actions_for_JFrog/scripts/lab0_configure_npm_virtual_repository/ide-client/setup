@@ -1,0 +1,38 @@
+#!/bin/bash
+
+
+# exec 2>&1
+# exec > /tmp/setup.out
+
+# log_error () {
+#    echo -e "[`date`]\033[31mERROR: $1\033[0m"
+# }
+
+# log_task () {
+#    echo -e "[`date`]\033[32mTASK: $1\033[0m"
+# }
+
+# log_task "Started setup"
+
+rm -fr /root/jfrog/
+# git clone https://github.com/sureshvenkatesan/node-todomvc.git jfrog
+# git clone https://github.com/sureshvenkatesan/JFTD-110-GitHub_Actions_for_JFrog.git jfrog
+# git clone --branch main https://github.com/sureshvenkatesan/SwampUp2025.git jfrog
+# git clone --branch JFTD-110 https://github.com/jfrog/SwampUp2025.git jfrog
+git clone --branch main https://github.com/jfrog/SwampUp2025.git jfrog
+
+
+#cp -r  /root/swampup25 /root/jfrog
+#Recursively run "chomd +x" on all  *.sh files under /root/jfrog/JFTD-110-GitHub_Actions_for_JFrog :
+find /root/swampup25/JFTD-110-GitHub_Actions_for_JFrog -type f -name "*.sh" -exec chmod +x {} \;
+
+# code-server --install-extension ms-vscode.node-debug
+# code-server --install-extension dbaeumer.vscode-eslint
+# code-server --install-extension esbenp.prettier-vscode
+# code-server --install-extension ms-vscode.node-debug2
+# code-server --install-extension ms-vscode.vscode-typescript-next
+
+
+# nohup /root/jfrog/110-github/labs1/setup-init.sh > /tmp/setup-init.log 2>&1 &
+
+# exit  

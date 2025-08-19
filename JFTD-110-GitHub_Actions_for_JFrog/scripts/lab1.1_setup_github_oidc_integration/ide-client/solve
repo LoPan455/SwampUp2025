@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# chmod +x /root/jfrog/JFTD-110-GitHub_Actions_for_JFrog/scripts/lab1.1_setup_github_oidc_integration/ide-client/solve.sh
+
+/root/swampup25/JFTD-110-GitHub_Actions_for_JFrog/scripts/lab1.1_setup_github_oidc_integration/ide-client/solve.sh

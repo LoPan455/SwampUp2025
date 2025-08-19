@@ -1,0 +1,4 @@
+#!/bin/bash
+
+
+/root/swampup25/JFTD-110-GitHub_Actions_for_JFrog/scripts/lab1.2_build_an_identity_mapping/ide-client/check.sh
