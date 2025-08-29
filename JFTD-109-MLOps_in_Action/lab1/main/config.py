@@ -5,8 +5,8 @@ from peft import LoraConfig
 
 # --- Model Configuration ---
 # Updated to use the Llama 2 7B Chat model
-MODEL_ID = "meta-llama/Llama-2-7b-chat-hf"
-#MODEL_ID = "google/gemma-2b-it"
+#MODEL_ID = "meta-llama/Llama-2-7b-chat-hf"
+MODEL_ID = "google/gemma-2b-it"
 
 # --- Training Hyperparameters ---
 TRAIN_BATCH_SIZE = int(os.environ.get('TRAIN_BATCH_SIZE', 2))

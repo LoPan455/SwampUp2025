@@ -2,7 +2,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
 from peft import get_peft_model, prepare_model_for_kbit_training
 from huggingface_hub import login
-from qwak.clients.secret_service import SecretServiceClient
+from frogml.core.clients.secret_service import SecretServiceClient
 import main.config as config
 
 

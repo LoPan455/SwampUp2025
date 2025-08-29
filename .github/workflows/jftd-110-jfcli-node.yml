@@ -2,6 +2,7 @@
 name: "JFTD-110-GitHub_Actions_for_JFrog: NPM Package with OIDC"
 description: "This workflow demonstrates how to use JFrog CLI with OIDC authentication to build and publish an NPM package, manage builds"
 on:
+  workflow_dispatch:
   push:
     paths:
       - 'JFTD-110-GitHub_Actions_for_JFrog/**'
@@ -17,7 +18,6 @@ env:
   JFROG_CLI_LOG_LEVEL: DEBUG # DEBUG, INFO, WARN, ERROR
   WORKSPACE_NPM: "JFTD-110-GitHub_Actions_for_JFrog/helloworld_npm"
   RT_REPO_NPM_VIRTUAL: "lab110-npm-virtual"
-  RT_REPO_NPM_DEFAULT_LOCAL: "lab110-npm-sandbox-local"
 
 jobs:
 
@@ -35,6 +35,7 @@ jobs:
         continue-on-error: true
         uses: actions/checkout@v4
 
+      # Start Lab 1.1 - Setup Github OIDC Integration #########################################################
       # TODO: Lab 1.1 - Replace this commented section with the snippet from "Step 1: Create the Github OIDC Integration object in your JFrog Platform instance"
       # 
       # Instructions:
@@ -45,102 +46,179 @@ jobs:
       # 5. Copy the "Show Snippet" YAML configuration
       # 6. Replace this commented section with the copied snippet
       #
-      - name: "Get Artifactory Access Token and Setup JFrog CLI"
-        uses: jfrog/setup-jfrog-cli@v4
-        id: setup-cli
-        env:
-          JF_URL: ${{vars.JF_RT_URL}}   # example: http://academy-artifactory.dzmfffgzzkmf.instruqt.io
-        with:
-          version: latest
-          oidc-provider-name: jfrog-githuboidc
+      # - name: "Get Artifactory Access Token and Setup JFrog CLI"
+      #   uses: jfrog/setup-jfrog-cli@v4
+      #   id: setup-cli
+      #   env:
+      #     JF_URL: ${{vars.ARTIFACTORY_URL}}   # example: http://academy-artifactory.dzmfffgzzkmf.instruqt.io
+      #   with:
+      #     version: latest
+      #     oidc-provider-name: jfrog-githuboidc
+      
+      # End Lab 1.1 #########################################################
 
-      - name: "Get Artifactory Access Token and Setup JFrog CLI"
-        uses: jfrog/setup-jfrog-cli@v4
-        id: setup-cli
-        env:
-          JF_URL: ${{vars.JF_RT_URL}}
-        with:
-          version: latest
-          oidc-provider-name: ${{ vars.JF_OIDC_PROVIDER_NAME }}
-
+      # Purpose: This step serves as a validation and debugging step to confirm that
+      # the OIDC authentication was successful and that the JFrog CLI setup step
+      # properly generated an access token. It only runs when the setup-jfrog-cli
+      # step successfully outputs an OIDC token, providing immediate feedback on
+      # the authentication status before proceeding with subsequent operations.
+      #
+      # Why it's important: This step helps troubleshoot OIDC integration issues
+      # early in the workflow and confirms that the JFrog CLI is properly configured
+      # with valid credentials before attempting to use it for npm operations.
+      #
       - name: "Run only if value is present"
         if: steps.setup-jfrog-cli.outputs.oidc-token != ''
         run: |
           echo "Access Token set as output to 'Get Artifactory Access Token and Setup JFrog CLI'"
 
-      # - name: "Optional: Setup Node.js v${{env.NODE_VERSION}}"
-      #   uses: actions/setup-node@v4
-      #   with:
-      #     node-version: ${{env.NODE_VERSION}}
-      #     registry-url: "${{env.JF_RT_URL}}/artifactory/api/npm/${{ env.RT_REPO_NPM_VIRTUAL }}"  # https://psazuse.jfrog.io/artifactory/api/npm/todomvc-npm-virtual/
 
-      - name: "Config npm registry with JFrog CLI"
-        run: |
-          pwd
-          jf npmc --repo-deploy=${{ env.RT_REPO_NPM_VIRTUAL}} --repo-resolve=${{ env.RT_REPO_NPM_VIRTUAL}}
+      # Start Lab 2 - Generate a Job Summary of Github Actions Workflow #########################################################
+      #
+      # TODO: Lab 2.1 - Step 1 - Configure npm with JFrog CLI
+      # NOTE - Uncomment this step to configure npm registry with JFrog CLI
+      #
+      # Purpose: This step configures the npm registry to use JFrog Artifactory repositories
+      # for both deployment and resolution. It sets up the npm configuration to point to
+      # the virtual repository that combines local and remote npm repositories.
+      #
+      # Instructions:
+      # 1. Ensure the JFrog CLI is properly configured (from Lab 1.1)
+      # 2. Uncomment this step to enable npm registry configuration
+      # 3. The step will configure npm to use the lab110-npm-virtual repository
+      #
+      # - name: "Config npm registry with JFrog CLI"
+      #   run: |
+      #     jf npmc --repo-deploy=${{ env.RT_REPO_NPM_VIRTUAL}} --repo-resolve=${{ env.RT_REPO_NPM_VIRTUAL}}
 
-      # Package
-      - name: "Curation: audit" # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-security/cli-for-jfrog-curation
-        timeout-minutes: 15    # ref https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#jobsjob_idstepstimeout-minutes
-        continue-on-error: true    # ref: https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#jobsjob_idstepscontinue-on-error
-        run: |
-          jf ca --format=table --threads=100
+      # TODO: Lab 2.2 - Step 2 - Run JFrog Curation Audit
+      # NOTE - Uncomment this step to perform JFrog Curation audit
+      #
+      # Purpose: This step performs a comprehensive security audit using JFrog Curation
+      # to identify and analyze potential security vulnerabilities, license compliance
+      # issues, and other security concerns in the npm dependencies.
+      #
+      # Instructions:
+      # 1. Ensure JFrog CLI is configured and authenticated
+      # 2. Uncomment this step to enable security auditing
+      # 3. The audit will run with table format output and 100 threads for efficiency
+      #
+      # - name: "Curation: audit" # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-security/cli-for-jfrog-curation
+      #   run: |
+      #     jf ca --format=table --threads=100
   
-      - name: "Xray & JAS: Audit"  # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-security
-        # scan for Xray: Source code dependencies and JAS: Secrets Detection, IaC, Vulnerabilities Contextual Analysis 'SAST'
-        timeout-minutes: 15  # ref: https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#jobsjob_idstepstimeout-minutes
-        continue-on-error: true    # ref: https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#jobsjob_idstepscontinue-on-error
-        run: |
-          jf audit --npm --sast=true --sca=true --secrets=true --licenses=true --validate-secrets=true --vuln=true --format=table --extended-table=true --threads=100 --fail=false
+      # TODO: Lab 2.3 - Step 3 - Run Depency Audit
+      # NOTE - Uncomment this step to perform Xray & Adv. security audit
+      # 
+      # Purpose: This step runs a comprehensive security scan using JFrog Xray and JAS
+      # (JFrog Advanced Security) to detect vulnerabilities, secrets, SAST issues,
+      # and license compliance problems in the source code and dependencies.
+      #
+      # Instructions:
+      # 1. Ensure JFrog CLI is configured and authenticated
+      # 2. Uncomment this step to enable comprehensive security scanning
+      # 3. The scan includes SAST, SCA, secrets detection, and vulnerability analysis
+      #
+      # - name: "Security Audit"  # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-security
+      #   run: |
+      #     jf audit 
 
-      - name: "Package: npm Build"   
-        continue-on-error: false
-        run: |
-          jf npm install --build-name=${{ env.BUILD_NAME}} --build-number=${{ env.BUILD_ID}} 
+      # TODO: Lab 2.4 - Step 4 - Install npm Dependencies
+      # NOTE - Uncomment this step to install npm dependencies
+      # 
+      # Purpose: This step installs npm dependencies using JFrog CLI, which tracks
+      # the build information and associates all downloaded packages with the build
+      # for later analysis and compliance tracking.
+      #
+      # Instructions:
+      # 1. Ensure npm registry is configured (from Lab 2.1)
+      # 2. Uncomment this step to enable dependency installation
+      # 3. The step will install dependencies and associate them with the build
+      #
+      # - name: "Install npm Dependencies"   
+      #   continue-on-error: false
+      #   run: |
+      #     jf npm install --build-name=${{ env.BUILD_NAME }} --build-number=${{ env.BUILD_ID }} 
      
-      - name: "Package: npm publish"
-        continue-on-error: false
-        run: |
-          jf npm publish --build-name=${{ env.BUILD_NAME}} --build-number=${{ env.BUILD_ID}} 
+      # TODO: Lab 2.5 - Step 5 - Publish npm package to Artifactory with BuildInfo
+      # NOTE - Uncomment this step to publish npm package
+      # 
+      # Purpose: This step publishes the npm package to the configured JFrog repository,
+      # making it available for other developers and builds while maintaining
+      # full traceability and compliance information.
+      #
+      # Instructions:
+      # 1. Ensure dependencies are installed (from Lab 2.4)
+      # 2. Uncomment this step to enable package publishing
+      # 3. The package will be published with build information for tracking
+      #
+      # - name: "Publish npm package"
+      #   continue-on-error: false
+      #   run: |
+      #     jf npm publish --build-name=${{ env.BUILD_NAME }} --build-number=${{ env.BUILD_ID }} 
+      
+      # TODO: Lab 2.6 - Step 6 - Collect Environment Variables
+      # NOTE - Uncomment this step to collect build environment information
+      # 
+      # Purpose: This step collects environment variables and system information
+      # from the GitHub Actions runner and associates it with the build for
+      # complete traceability and debugging purposes.
+      #
+      # Instructions:
+      # 1. Ensure JFrog CLI is configured and authenticated
+      # 2. Uncomment this step to enable environment collection
+      # 3. Environment variables will be captured and stored with the build
+      #
+      # - name: "Collect env variables"
+      #   run: |
+      #     jf rt bce ${{ env.BUILD_NAME}} ${{ env.BUILD_ID}}    # BCE (build-collect-env) - Collect environment variables and attach them to a build
+      #     jf rt bag ${{ env.BUILD_NAME}} ${{ env.BUILD_ID}}    # BAG (build-add-git) - Collects VCS information (repository URL, branch, commit ID)
+      
+      # TODO: Lab 2.7 - Step 7 - Publish Build Information
+      # NOTE: Uncomment this step to publish build information
+      # 
+      # Purpose: This step publishes the complete build information to JFrog
+      # Artifactory, including all dependencies, environment variables, VCS data,
+      # and build metadata for comprehensive tracking and compliance.
+      #
+      # Instructions:
+      # 1. Ensure all build information is collected (from previous steps)
+      # 2. Uncomment this step to enable build publishing
+      # 3. Complete build information will be published to Artifactory
+      #
+      # - name: "Publish BuildInfo"  
+      #   run: |
+      #     jf rt bp ${{ env.BUILD_NAME}} ${{ env.BUILD_ID}} --detailed-summary=true   # BP (build-add-git) - To finalize and push build information (dependencies, artifacts, environment variables, etc.) to JFrog
 
-      - name: "Package: Xray - npm Artifact scan"
-        timeout-minutes: 15  # ref: https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#jobsjob_idstepstimeout-minutes
-        continue-on-error: true    # ref: https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#jobsjob_idstepscontinue-on-error
-        run: |
-          jf scan . --format=table --extended-table=true --threads=100 --fail=false
       
-      # Build Info
-      - name: "BCE: Collect env"
-        continue-on-error: true
-        run: jf rt bce ${{ env.BUILD_NAME}} ${{ env.BUILD_ID}} 
- 
-      - name: "BAG: Add VCS info"
-        continue-on-error: true
-        run: jf rt bag ${{ env.BUILD_NAME}} ${{ env.BUILD_ID}} 
-      
-      - name: "BP: Build Publish"  
-        continue-on-error: false
-        run: jf rt bp ${{ env.BUILD_NAME}} ${{ env.BUILD_ID}} --detailed-summary=true
-      
-
+      # Purpose: This step adds a delay to ensure proper synchronization between
+      # build publishing and subsequent operations, particularly important for
+      # Xray scanning and other dependent processes.
       - name: "Sleep for few seconds"
         env: 
-          SLEEP_TIME: 30
+           SLEEP_TIME: 30
         run: |
            echo "Sleeping for ${{env.SLEEP_TIME}} seconds..."
            sleep ${{env.SLEEP_TIME}}  # Sleeping for 20 seconds before executing the build publish seems to have resolved the build-scan issue. This delay might be helping with synchronization or resource availability, ensuring a smooth build process.
            echo "Awake now!"
 
-      - name: "Optional: Query - Build Scan status"
-        run: |
-          jf xr curl "/api/v1/build/status" -H 'Content-Type: application/json' -d '{"name": "${{env.BUILD_NAME}}", "number": "${{env.BUILD_ID}}" }'
+    
+      # TODO: Lab 2.8 - Build Scan
+      # NOTE: Uncomment this step to perform final build scan
+      #
+      # Purpose: This step performs the final comprehensive scan of the build
+      # using JFrog Xray, analyzing all components for vulnerabilities, license
+      # issues, and compliance problems in the context of the complete build.
+      #
+      # Instructions:
+      # 1. Ensure build scan is complete and status is available
+      # 2. Uncomment this step to enable final build scanning
+      # 3. The scan will provide comprehensive security analysis of the build
+      #
+      # - name: "Build Scan"
+      #   run: |
+      #     jf bs ${{env.BUILD_NAME}} ${{env.BUILD_ID}} --fail=false --format=table --extended-table=true --rescan=false --vuln=true
 
-      - name: "BuildInfo: Xray - Build scan"
-        timeout-minutes: 15   
-        continue-on-error: true  
-        run: |
-          jf bs ${{env.BUILD_NAME}} ${{env.BUILD_ID}} --fail=false --format=table --extended-table=true --rescan=false --vuln=true
-
-  
+      # End Lab 2 #########################################################
     
   

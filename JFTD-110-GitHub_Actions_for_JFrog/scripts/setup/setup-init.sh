@@ -31,33 +31,7 @@ do
 done
 log_task "Artifactory is responding"
 
-jf c rm academy1 --quiet
 
-while true; do
-    # Try with access token first
-    jf config add academy1 \
-        --url=http://academy-artifactory \
-        --access-token "$JFROG_ACCESS_TOKEN" \
-        --interactive=false
-
-    if [ $? -eq 0 ]; then
-        break
-    fi
-
-    # If access token fails, try with user/password
-    jf config add academy1 \
-        --url=http://academy-artifactory \
-        --user=admin \
-        --password=Admin1234! \
-        --interactive=false
-
-    if [ $? -eq 0 ]; then
-        break
-    fi
-
-    # Retry after a delay
-    sleep 20
-done
 
 log_task "JF Config executed"
 
@@ -89,6 +63,32 @@ jf xr curl -XPOST "ui/unified/binMgr/v1/setIndexedBuilds" \
   }
 }'
 log_task "Indexed All builds by Pattern"
+
+log_task "START - Creating Curation Policy for malicious"
+jf xr curl -XPOST "api/v1/curation/policies" \
+-H "content-type:application/json" --server-id=academy \
+-d ' {
+  "name": "maliciouspackage",
+  "condition_id": "1",
+  "scope": "all_repos",
+  "policy_action": "block",
+  "waiver_request_config": "forbidden"
+}'
+log_task "END - Creating Curation Policy for malicious"
+
+log_task "START - Creating Curation Policy for CVE with CVSS score between 7.0 and 8.9 (with or without a fix version available)"
+
+jf xr curl -XPOST "api/v1/curation/policies" \
+-H "content-type:application/json" --server-id=academy \
+-d ' {
+  "name": "CVEwithCVSS7-9",
+  "condition_id": "5",
+  "scope": "all_repos",
+  "policy_action": "block",
+  "waiver_request_config": "auto_approved"
+}'
+
+log_task "END - Creating Curation Policy for CVE with CVSS score between 7.0 and 8.9 (with or without a fix version available)"
 
 # chmod +x JFTD-110-GitHub_Actions_for_JFrog/labs1_setup/update_repo_environments.sh
 

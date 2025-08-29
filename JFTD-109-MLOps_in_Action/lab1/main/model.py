@@ -1,9 +1,10 @@
 import platform
 import torch
-from qwak.model.base import QwakModel
-from qwak.model.schema import ExplicitFeature, ModelSchema
-from qwak.model.adapters import JsonInputAdapter, JsonOutputAdapter
-import qwak
+import frogml
+from frogml import FrogMlModel
+from frogml.sdk.model.adapters import DataFrameInputAdapter, JsonOutputAdapter, JsonInputAdapter
+from frogml.sdk.model.schema import ExplicitFeature, InferenceOutput, ModelSchema
+from frogml.core.clients.secret_service import SecretServiceClient
 from transformers import (
     Trainer,
     TrainingArguments,
@@ -19,12 +20,12 @@ import main.config as config
 import main.data_utils as data_utils
 import main.model_utils as model_utils
 
-class LLMFineTuner(QwakModel):
+class LLMFineTuner(FrogMlModel):
     """
-    A QwakModel class to fine-tune and serve a Llama2 8B model.
+    A FrogMlModel class to fine-tune and serve a Llama2 8B model.
 
     This class is a high-level orchestrator, delegating tasks
-    to helper modules. It defines the model's lifecycle for the Qwak platform.
+    to helper modules. It defines the model's lifecycle for the JFrog platform.
     """
 
     def __init__(self):
@@ -39,13 +40,13 @@ class LLMFineTuner(QwakModel):
         # Define the directory where the fine-tuned adapter will be saved.
         if platform.system() == 'Darwin': # For local testing
             self.adapter_output_dir = './llama-imdb-finetuned'
-        else: # For the Qwak environment
-            self.adapter_output_dir = "/qwak/model_dir/llama-imdb-finetuned"
+        else: # For the JFrog environment
+            self.adapter_output_dir = "/jfrog/model_dir/llama-imdb-finetuned"
 
 
     def build(self):
         """
-        The main training logic. This method is called by Qwak to build the model.
+        The main training logic. This method is called by JFrog to build the model.
         It trains the model and saves the resulting LoRA adapter and tokenizer to disk.
         """
         print(f"Starting build process for model: {config.MODEL_ID}")
@@ -125,7 +126,7 @@ class LLMFineTuner(QwakModel):
             "lora_alpha": config.LORA_CONFIG.lora_alpha,
             "lora_target_modules": str(config.LORA_CONFIG.target_modules),
         }
-        qwak.log_param(params_to_log)
+        frogml.log_param(params_to_log)
 
         # Log the final metrics from the training process
         final_metrics = train_output.metrics
@@ -135,7 +136,7 @@ class LLMFineTuner(QwakModel):
         if eval_logs:
             final_metrics['final_eval_loss'] = eval_logs[-1]['eval_loss']
 
-        qwak.log_metric(final_metrics)
+        frogml.log_metric(final_metrics)
         print(f"Logged Parameters: {params_to_log}")
         print(f"Logged Metrics: {final_metrics}")
         # --- END ADDITION ---
@@ -195,7 +196,7 @@ class LLMFineTuner(QwakModel):
         """
         return ModelSchema(inputs=[ExplicitFeature(name="prompt", type=str)])
 
-    @qwak.api(input_adapter=JsonInputAdapter(), output_adapter=JsonOutputAdapter())
+    @frogml.api(input_adapter=JsonInputAdapter(), output_adapter=JsonOutputAdapter())
     def predict(self, json_objects):
         """
         The main inference method. It takes a list of JSON objects and returns predictions.

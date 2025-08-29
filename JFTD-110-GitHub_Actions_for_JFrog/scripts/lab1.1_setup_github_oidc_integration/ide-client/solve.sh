@@ -75,7 +75,7 @@ echo "================================================"
 
 
 # Set the server ID and JF_URL
-SERVER_ID="academy1"
+SERVER_ID="academy"
 # JF_URL="http://$_SANDBOX_ID.instruqt.io"
 
 echo "🔧 Configuration:"
